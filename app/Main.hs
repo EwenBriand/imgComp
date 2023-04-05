@@ -57,23 +57,64 @@ maybeToFloat (Just x) = x
 printCentroids :: [Cluster] -> [Point]
 printCentroids = map centroid
 
+printPoint :: Point -> IO ()
+printPoint p =
+  putStrLn $
+    "("
+      ++ show (posx p)
+      ++ ","
+      ++ show (posy p)
+      ++ ") ("
+      ++ show (r p)
+      ++ ","
+      ++ show (g p)
+      ++ ","
+      ++ show (b p)
+      ++ ")"
+
+printCentroide :: Point -> IO ()
+printCentroide p =
+  putStrLn $
+    "("
+      ++ show (r p)
+      ++ ","
+      ++ show (g p)
+      ++ ","
+      ++ show (b p)
+      ++ ")"
+
+printList :: [Point] -> IO ()
+printList [] = return ()
+printList (x : xs) = printPoint x >> printList xs
+
+printOutputs :: [Cluster] -> IO ()
+printOutputs [] = return ()
+printOutputs (x : xs) =
+  putStrLn "--"
+    >> printCentroide (centroid x)
+    >> putStrLn "-"
+    >> printList (points x)
+    >> printOutputs xs
+
 parseFile :: Maybe Options -> IO ()
 parseFile Nothing = print "Error: Failed to parse options"
 parseFile (Just opt) = do
   content <- readFile (file opt)
 
-  putStrLn (show (nbrColors opt))
-  putStrLn (show (convergence opt))
+  -- putStrLn (show (nbrColors opt))
+  -- putStrLn (show (convergence opt))
   -- putStrLn content
 
   let li = lines content
   clusters <- startCluster li (maybeToInt (nbrColors opt))
   let allp = strToPoint li
-  print clusters
+  -- print clusters
 
   let res = kMeans allp clusters (maybeToFloat (convergence opt))
-  let centroids = printCentroids res
-  mapM_ print centroids
+  -- let res = kMeans allp clusters 10
+  -- let centroids = printCentroids res
+  -- mapM_ print centroids
+  printOutputs res
 
 main :: IO ()
 main = do

@@ -102,14 +102,27 @@ strToCluster str = Cluster {centroid = Point (head (parseTuple pint)) (parseTupl
     pint = last (words str)
     f = head (words str)
 
-creatCluster :: [String] -> Int -> IO [Cluster]
-creatCluster _ 0 = return []
-creatCluster x k = do
+checkIndices :: [Int] -> Bool
+checkIndices [] = True
+checkIndices (x : xs)
+  | x `elem` xs = False
+  | otherwise = checkIndices xs
+
+getRdmIdc :: [String] -> Int -> IO [Int]
+getRdmIdc x k = do
   indices <- replicateM k $ randomRIO (0, length x - 1)
+  if checkIndices indices
+    then return indices
+    else getRdmIdc x k
+
+createCluster :: [String] -> Int -> IO [Cluster]
+createCluster _ 0 = return []
+createCluster x k = do
+  indices <- getRdmIdc x k
   return $ map (strToCluster . (x !!)) indices
 
 startCluster :: [String] -> Int -> IO [Cluster]
-startCluster li k = print (strToCluster (head li)) >> creatCluster li k
+startCluster = createCluster
 
 strToPoint :: [String] -> [Point]
 strToPoint [] = []
