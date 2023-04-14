@@ -97,10 +97,11 @@ parseTuple s = map read $ filter (not . null) $ splitByComma (replace ")" " " $ 
 --   | otherwise = closest xs y z
 
 strToCluster :: String -> Cluster
-strToCluster str = Cluster {centroid = Point (head (parseTuple pint)) (parseTuple pint !! 1) (parseTuple pint !! 2) (head (parseTuple f)) (last (parseTuple f)), points = []}
+strToCluster str = Cluster {centroid = poin, points = []}
   where
     pint = last (words str)
     f = head (words str)
+    poin = Point (head (parseTuple pint)) (parseTuple pint !! 1) (parseTuple pint !! 2) (head (parseTuple f)) (last (parseTuple f))
 
 checkIndices :: [Int] -> Bool
 checkIndices [] = True
@@ -114,6 +115,51 @@ getRdmIdc x k = do
   if checkIndices indices
     then return indices
     else getRdmIdc x k
+
+-- checkIndice :: [Int] -> Int -> Bool
+-- checkIndice [] _ = True
+-- checkIndice (x : xs) act
+--   | x == act = False
+--   | otherwise = checkIndices xs act
+
+-- -- mkstdgen randomR
+-- -- getRdmIdc :: [String] -> Int -> [Int]
+-- -- getRdmIdc x k =
+-- --   -- indices <- replicateM k $ randomRIO (0, length x - 1)
+-- --   if checkIndices indices
+-- --     then return indices
+-- --     else getRdmIdc x k
+-- --   where
+-- --     gen = mkStdGen 42 -- Create a new random number generator with seed 42
+-- --     indices = replicateM k $ randomR (0, length x - 1) (gen :: StdGen)
+
+-- -- getRdmIdc :: [String] -> Int -> IO [Int]
+-- -- getRdmIdc x k = do
+-- --   let gen = mkStdGen 42 -- Create a new random number generator with seed 42
+-- --       maxIndex = length x - 1
+-- --       randomIndex = randomR (0, maxIndex) (gen :: StdGen) -- Generate a random index using the generator
+-- --       indices = replicateM k randomIndex -- Generate k indices using replicateM
+-- --   return indices
+
+-- getCurrentTimeAsInt :: IO Int
+-- getCurrentTimeAsInt = do
+--   time <- getCurrentTime
+--   let diffTime = diffUTCTime time (UTCTime (toEnum 0) (secondsToDiffTime 0))
+--       seconds = round $ toRational diffTime
+--   return seconds
+
+-- getRdmIdcLst :: [String] -> Int -> [Int]
+-- getRdmIdcLst _ 0 = []
+-- getRdmIdcLst x k = act : getRdmIdc x (k - 1)
+--   where
+--     act = take k $ randomR (0, length x - 1) (mkStdGen (getCurrentTimeAsInt))
+
+-- getRdmIdc :: [String] -> Int -> [Int]
+-- getRdmIdc x k
+--   | checkIndices res = res
+--   | otherwise = getRdmIdc x k
+--   where
+--     res = getRdmIdcLst x k
 
 createCluster :: [String] -> Int -> IO [Cluster]
 createCluster _ 0 = return []
@@ -181,22 +227,30 @@ getNewPos c [] sumR sumG sumB count
 getNewPos c (x : xs) sumR sumG sumB count = getNewPos c xs (sumR + r x) (sumG + g x) (sumB + b x) (count + 1)
 
 calcNew :: [Cluster] -> [Cluster]
-calcNew [] = []
-calcNew (x : xs) = x {centroid = getNewPos x (points x) 0 0 0 0, points = []} : calcNew xs
+calcNew =
+  map
+    (\x -> x {centroid = getNewPos x (points x) 0 0 0 0, points = []})
 
 -- orgNew :: [Point] -> [Cluster] -> [Cluster]
 -- orgNew [] cluster = cluster
 -- orgNew (x : xs) cluster = orgNew xs (cluster !! (getMin x cluster 1000 0 0) {points = x : points})
 
+closest :: Point -> [Cluster] -> Cluster -> Cluster
+closest _ [] best = best
+closest p (x : xs) best
+  | distance (centroid x) p < distance (centroid best) p = closest p xs x
+  | otherwise = closest p xs best
+
 orgNew :: [Point] -> [Cluster] -> [Cluster]
 orgNew [] clusters = clusters
 orgNew (x : xs) clusters =
-  let closestCluster = foldr (\c1 c2 -> if distance (centroid c1) x < distance (centroid c2) x then c1 else c2) (head clusters) clusters
+  let closestCluster = closest x clusters (head clusters)
       updatedCluster = closestCluster {points = x : points closestCluster}
       restClusters = filter (/= closestCluster) clusters
    in orgNew xs (updatedCluster : restClusters)
 
-kMeans :: [Point] -> [Cluster] -> Float -> [Cluster]
-kMeans allp clusters threshold
+kMeans :: Int -> [Point] -> [Cluster] -> Float -> [Cluster]
+kMeans 1 allp clusters threshold = kMeans 0 allp (orgNew allp clusters) threshold
+kMeans _ allp clusters threshold
   | convergence (calcNew clusters) clusters threshold = orgNew allp (calcNew clusters)
-  | otherwise = kMeans allp (orgNew allp (calcNew clusters)) threshold
+  | otherwise = kMeans 0 allp (orgNew allp (calcNew clusters)) threshold

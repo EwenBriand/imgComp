@@ -84,17 +84,20 @@ printCentroide p =
       ++ ")"
 
 printList :: [Point] -> IO ()
-printList [] = return ()
-printList (x : xs) = printPoint x >> printList xs
+printList = foldr ((>>) . printPoint) (return ())
 
 printOutputs :: [Cluster] -> IO ()
-printOutputs [] = return ()
-printOutputs (x : xs) =
-  putStrLn "--"
-    >> printCentroide (centroid x)
-    >> putStrLn "-"
-    >> printList (points x)
-    >> printOutputs xs
+printOutputs =
+  foldr
+    ( \x ->
+        (>>)
+          ( putStrLn "--"
+              >> printCentroide (centroid x)
+              >> putStrLn "-"
+              >> printList (points x)
+          )
+    )
+    (return ())
 
 parseFile :: Maybe Options -> IO ()
 parseFile Nothing = print "Error: Failed to parse options"
@@ -110,7 +113,7 @@ parseFile (Just opt) = do
   let allp = strToPoint li
   -- print clusters
 
-  let res = kMeans allp clusters (maybeToFloat (convergence opt))
+  let res = kMeans 1 allp clusters (maybeToFloat (convergence opt))
   -- let res = kMeans allp clusters 10
   -- let centroids = printCentroids res
   -- mapM_ print centroids
