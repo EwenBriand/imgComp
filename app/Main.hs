@@ -12,11 +12,9 @@ import Lib
 import System.Environment (getArgs)
 import Text.Read (readMaybe)
 
--- import Text.Printf (PrintfArg(parseFormat))
-
 data Options = Options
   { file :: String,
-    cluster :: [Point], -- centroid
+    cluster :: [Point],
     convergence :: Maybe Float,
     nbrColors :: Maybe Int
   }
@@ -104,26 +102,16 @@ parseFile Nothing = print "Error: Failed to parse options"
 parseFile (Just opt) = do
   content <- readFile (file opt)
 
-  -- putStrLn (show (nbrColors opt))
-  -- putStrLn (show (convergence opt))
-  -- putStrLn content
-
   let li = lines content
   clusters <- startCluster li (maybeToInt (nbrColors opt))
   let allp = strToPoint li
-  -- print clusters
-
   let res = kMeans 1 allp clusters (maybeToFloat (convergence opt))
-  -- let res = kMeans allp clusters 10
-  -- let centroids = printCentroids res
-  -- mapM_ print centroids
   printOutputs res
 
 main :: IO ()
 main = do
   args <- getArgs
   let options = parseOptions args
-  -- print options
   case options of
     Just o -> do
       if convergence o == Nothing
@@ -136,13 +124,3 @@ main = do
                 then print "Error: file is not set"
                 else parseFile options
     Nothing -> print "Error: Failed to parse options"
-
--- main :: IO ()
--- main = do
---     args <- getArgs
---     case args of
---         [file] -> do
---             content <- readFile file
---             putStrLn content
---             -- parseFile content
---         _ -> putStrLn "Usage: ./compressor <file>"

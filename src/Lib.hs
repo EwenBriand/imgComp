@@ -80,71 +80,13 @@ checkIndices (x : xs)
   | x `elem` xs = False
   | otherwise = checkIndices xs
 
--- getRdmIdc :: [String] -> Int -> IO [Int]
--- getRdmIdc x k = do
---   indices <- replicateM k $ randomRIO (0, length x - 1)
---   if checkIndices indices
---     then return indices
---     else getRdmIdc x k
-
 getRdmIdc :: [String] -> Int -> IO [Int]
 getRdmIdc x k = do
-  gen <- newStdGen -- get new random generator based on current time
-  let indices = take k $ randomRs (0, length x - 1) gen -- generate k random indices using randomRs
+  gen <- newStdGen
+  let indices = take k $ randomRs (0, length x - 1) gen
   if checkIndices indices
     then return indices
     else getRdmIdc x k
-
--- newStdGenWithTime :: IO StdGen
--- newStdGenWithTime = do
---   t <- getCurrentTime
---   let (s1, s2) = split $ mkStdGen $ fromIntegral $ utctDayTime t
---   return s2
-
--- checkIndice :: [Int] -> Int -> Bool
--- checkIndice [] _ = True
--- checkIndice (x : xs) act
---   | x == act = False
---   | otherwise = checkIndices xs act
-
--- -- mkstdgen randomR
--- -- getRdmIdc :: [String] -> Int -> [Int]
--- -- getRdmIdc x k =
--- --   -- indices <- replicateM k $ randomRIO (0, length x - 1)
--- --   if checkIndices indices
--- --     then return indices
--- --     else getRdmIdc x k
--- --   where
--- --     gen = mkStdGen 42 -- Create a new random number generator with seed 42
--- --     indices = replicateM k $ randomR (0, length x - 1) (gen :: StdGen)
-
--- -- getRdmIdc :: [String] -> Int -> IO [Int]
--- -- getRdmIdc x k = do
--- --   let gen = mkStdGen 42 -- Create a new random number generator with seed 42
--- --       maxIndex = length x - 1
--- --       randomIndex = randomR (0, maxIndex) (gen :: StdGen) -- Generate a random index using the generator
--- --       indices = replicateM k randomIndex -- Generate k indices using replicateM
--- --   return indices
-
--- getCurrentTimeAsInt :: IO Int
--- getCurrentTimeAsInt = do
---   time <- getCurrentTime
---   let diffTime = diffUTCTime time (UTCTime (toEnum 0) (secondsToDiffTime 0))
---       seconds = round $ toRational diffTime
---   return seconds
-
--- getRdmIdcLst :: [String] -> Int -> [Int]
--- getRdmIdcLst _ 0 = []
--- getRdmIdcLst x k = act : getRdmIdc x (k - 1)
---   where
---     act = take k $ randomR (0, length x - 1) (mkStdGen (getCurrentTimeAsInt))
-
--- getRdmIdc :: [String] -> Int -> [Int]
--- getRdmIdc x k
---   | checkIndices res = res
---   | otherwise = getRdmIdc x k
---   where
---     res = getRdmIdcLst x k
 
 createCluster :: [String] -> Int -> IO [Cluster]
 createCluster _ 0 = return []
