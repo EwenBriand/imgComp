@@ -7,10 +7,8 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module Lib
-  ( -- charToInt,
+  (
     distance,
-    -- ok,
-    -- closest,
     startCluster,
     Point (..),
     Cluster (..),
@@ -20,9 +18,7 @@ module Lib
 where
 
 import Control.Monad (replicateM)
--- import Data.Char (isDigit, ord)
 import Data.Function (on)
--- import Data.List (transpose)
 import System.Random
 
 data Point = Point
@@ -63,16 +59,19 @@ replace find replaceWith (x : xs)
   | otherwise = x : replace find replaceWith xs
 
 parseTuple :: String -> [Int]
-parseTuple s = map read $ filter (not . null) $ splitByComma (replace ")" " " $ replace "(" " " s)
+parseTuple s = map read $ filter (not . null)
+  $ splitByComma (replace ")" " " $ replace "(" " " s)
   where
-    splitByComma = foldr (\c acc -> if c == ',' then [] : acc else (c : head acc) : tail acc) [[]]
+    splitByComma = foldr (\c acc -> if c == ','
+      then [] : acc else (c : head acc) : tail acc) [[]]
 
 strToCluster :: String -> Cluster
 strToCluster str = Cluster {centroid = poin, points = []}
   where
     pint = last (words str)
     f = head (words str)
-    poin = Point (head (parseTuple pint)) (parseTuple pint !! 1) (parseTuple pint !! 2) (head (parseTuple f)) (last (parseTuple f))
+    poin = Point (head (parseTuple pint)) (parseTuple pint !! 1)
+      (parseTuple pint !! 2) (head (parseTuple f)) (last (parseTuple f))
 
 checkIndices :: [Int] -> Bool
 checkIndices [] = True
@@ -138,10 +137,12 @@ orgNew (x : xs) clusters =
   let closestCluster = closest x clusters (head clusters)
       updatedCluster = closestCluster {points = x : points closestCluster}
       restClusters = filter (/= closestCluster) clusters
-   in orgNew xs (updatedCluster : restClusters)
+    in orgNew xs (updatedCluster : restClusters)
 
 kMeans :: Int -> [Point] -> [Cluster] -> Float -> [Cluster]
-kMeans 1 allp clusters threshold = kMeans 0 allp (orgNew allp clusters) threshold
+kMeans 1 allp clusters threshold =
+  kMeans 0 allp (orgNew allp clusters) threshold
 kMeans _ allp clusters threshold
-  | convergence (calcNew clusters) clusters threshold = orgNew allp (calcNew clusters)
+  | convergence (calcNew clusters) clusters threshold =
+    orgNew allp (calcNew clusters)
   | otherwise = kMeans 0 allp (orgNew allp (calcNew clusters)) threshold

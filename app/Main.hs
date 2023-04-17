@@ -112,24 +112,6 @@ parseFile (Just opt) = do
   let res = kMeans 1 allp clusters (maybeToFloat (convergence opt))
   printOutputs res
 
--- main :: IO ()
--- main = do
---   args <- getArgs
---   let options = parseOptions args
---   -- print options
---   case options of
---     Just o -> do
---       if convergence o == Nothing
---         then print "Error: convergence is not set"
---         else
---           if nbrColors o == Nothing
---             then print "Error: nbrColors is not set"
---             else
---               if file o == ""
---                 then print "Error: file is not set"
---                 else parseFile options
---     Nothing -> print "Error: Failed to parse options"
-
 main :: IO ()
 main = do
   args <- getArgs
