@@ -9,6 +9,11 @@ module Main (main) where
 
 import Data.Maybe (fromMaybe)
 import Lib
+    ( kMeans,
+      startCluster,
+      strToPoint,
+      Cluster(points, centroid),
+      Point(b, posx, posy, r, g) )
 import System.Environment (getArgs)
 import Text.Read (readMaybe)
 
@@ -31,19 +36,18 @@ parseOptions [] =
         convergence = Nothing,
         nbrColors = Nothing
       }
+
 parseOptions ("-n" : n : xs) =
-  parseOptions xs >>= do
-    let n' = readMaybe n :: Maybe Int
-    let n'' = fromMaybe 1 n'
-    (\o -> Just o {nbrColors = Just n''})
+  parseOptions xs >>= (\o -> Just o
+  {nbrColors = Just (fromMaybe 1 (readMaybe n :: Maybe Int))})
+
 parseOptions ("-l" : c : xs) =
-  parseOptions xs >>= do
-    let c' = readMaybe c :: Maybe Float
-    let c'' = fromMaybe 1 c'
-    (\o -> Just o {convergence = Just c''})
+  parseOptions xs >>= (\o -> Just o
+  {convergence = Just (fromMaybe 1 (readMaybe c :: Maybe Float))})
+
 parseOptions ("-f" : f : xs) =
-  parseOptions xs >>= do
-    (\o -> Just o {file = f})
+  parseOptions xs >>= (\o -> Just o {file = f})
+
 parseOptions _ = Nothing
 
 maybeToInt :: Maybe Int -> Int
@@ -119,30 +123,32 @@ parseFile (Just opt) = do
   -- mapM_ print centroids
   printOutputs res
 
+-- main :: IO ()
+-- main = do
+--   args <- getArgs
+--   let options = parseOptions args
+--   -- print options
+--   case options of
+--     Just o -> do
+--       if convergence o == Nothing
+--         then print "Error: convergence is not set"
+--         else
+--           if nbrColors o == Nothing
+--             then print "Error: nbrColors is not set"
+--             else
+--               if file o == ""
+--                 then print "Error: file is not set"
+--                 else parseFile options
+--     Nothing -> print "Error: Failed to parse options"
+
 main :: IO ()
 main = do
   args <- getArgs
   let options = parseOptions args
   -- print options
   case options of
-    Just o -> do
-      if convergence o == Nothing
-        then print "Error: convergence is not set"
-        else
-          if nbrColors o == Nothing
-            then print "Error: nbrColors is not set"
-            else
-              if file o == ""
-                then print "Error: file is not set"
-                else parseFile options
+    Just o | convergence o == Nothing -> print "Error: convergence is not set"
+           | nbrColors o == Nothing -> print "Error: nbrColors is not set"
+           | file o == "" -> print "Error: file is not set"
+           | otherwise -> parseFile options
     Nothing -> print "Error: Failed to parse options"
-
--- main :: IO ()
--- main = do
---     args <- getArgs
---     case args of
---         [file] -> do
---             content <- readFile file
---             putStrLn content
---             -- parseFile content
---         _ -> putStrLn "Usage: ./compressor <file>"

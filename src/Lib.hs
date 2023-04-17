@@ -157,7 +157,9 @@ startCluster = createCluster
 
 strToPoint :: [String] -> [Point]
 strToPoint [] = []
-strToPoint (x : xs) = Point (head (parseTuple pint)) (parseTuple pint !! 1) (parseTuple pint !! 2) (head (parseTuple f)) (last (parseTuple f)) : strToPoint xs
+strToPoint (x : xs) = Point (head (parseTuple pint))
+  (parseTuple pint !! 1) (parseTuple pint !! 2)
+  (head (parseTuple f)) (last (parseTuple f)) : strToPoint xs
   where
     pint = last (words x)
     f = head (words x)
@@ -165,14 +167,17 @@ strToPoint (x : xs) = Point (head (parseTuple pint)) (parseTuple pint !! 1) (par
 convergence :: [Cluster] -> [Cluster] -> Float -> Bool
 convergence [] [] _ = True
 convergence (c1 : cs1) (c2 : cs2) threshold
-  | distance (centroid c1) (centroid c2) <= threshold = convergence cs1 cs2 threshold
+  | distance (centroid c1) (centroid c2) <=
+    threshold = convergence cs1 cs2 threshold
   | otherwise = False
 
 getNewPos :: Cluster -> [Point] -> Int -> Int -> Int -> Int -> Point
 getNewPos c [] sumR sumG sumB count
   | count == 0 = (centroid c) {r = sumR, g = sumG, b = sumB}
-  | otherwise = (centroid c) {r = sumR `div` count, g = sumG `div` count, b = sumB `div` count}
-getNewPos c (x : xs) sumR sumG sumB count = getNewPos c xs (sumR + r x) (sumG + g x) (sumB + b x) (count + 1)
+  | otherwise = (centroid c) {r = sumR `div` count,
+  g = sumG `div` count, b = sumB `div` count}
+getNewPos c (x : xs) sumR sumG sumB count =
+  getNewPos c xs (sumR + r x) (sumG + g x) (sumB + b x) (count + 1)
 
 calcNew :: [Cluster] -> [Cluster]
 calcNew =
