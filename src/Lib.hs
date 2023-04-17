@@ -113,12 +113,16 @@ convergence (c1 : cs1) (c2 : cs2) threshold
   | otherwise = False
 
 getNewPos :: Cluster -> [Point] -> Int -> Int -> Int -> Int -> Point
-getNewPos c [] sumR sumG sumB count
-  | count == 0 = (centroid c) {r = sumR, g = sumG, b = sumB}
-  | otherwise = (centroid c) {r = sumR `div` count,
-  g = sumG `div` count, b = sumB `div` count}
-getNewPos c (x : xs) sumR sumG sumB count =
-  getNewPos c xs (sumR + r x) (sumG + g x) (sumB + b x) (count + 1)
+getNewPos c xs sumR sumG sumB count
+  = case xs of
+      [] -> if count == 0
+              then (centroid c) {r = sumR, g = sumG, b = sumB}
+              else (centroid c) {r = sumR `div` count,
+                                  g = sumG `div` count,
+                                  b = sumB `div` count}
+      x : xs' -> getNewPos c xs' (sumR + r x) (sumG + g x)
+                (sumB + b x) (count + 1)
+
 
 calcNew :: [Cluster] -> [Cluster]
 calcNew =

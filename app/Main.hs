@@ -62,16 +62,8 @@ printCentroids = map centroid
 printPoint :: Point -> IO ()
 printPoint p =
   putStrLn $
-    "("
-      ++ show (posx p)
-      ++ ","
-      ++ show (posy p)
-      ++ ") ("
-      ++ show (r p)
-      ++ ","
-      ++ show (g p)
-      ++ ","
-      ++ show (b p)
+    "(" ++ show (posx p) ++ "," ++ show (posy p) ++ ") ("
+      ++ show (r p) ++ "," ++ show (g p) ++ "," ++ show (b p)
       ++ ")"
 
 printCentroide :: Point -> IO ()
@@ -91,9 +83,7 @@ printList = foldr ((>>) . printPoint) (return ())
 printOutputs :: [Cluster] -> IO ()
 printOutputs =
   foldr
-    ( \x ->
-        (>>)
-          ( putStrLn "--"
+    ( \x -> (>>) ( putStrLn "--"
               >> printCentroide (centroid x)
               >> putStrLn "-"
               >> printList (points x)

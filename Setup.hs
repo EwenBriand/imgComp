@@ -1,9 +1,9 @@
---
--- EPITECH PROJECT, 2023
--- B-FUN-400-BAR-4-1-compressor-clement.toni
+{-
+-- EPITECH PROJECT, 2022
+-- imageCompressor
 -- File description:
--- Setup
---
+-- Lib.hs
+-}
 
 import Distribution.Simple
 
