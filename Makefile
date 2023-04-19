@@ -1,3 +1,10 @@
+##
+## EPITECH PROJECT, 2023
+## B-FUN-400-BAR-4-1-compressor-clement.toni
+## File description:
+## Makefile
+##
+
 BINARY_PATH 	:=	$(shell stack path --local-install-root)
 NAME 	= 	imageCompressor
 
